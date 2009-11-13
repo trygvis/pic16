@@ -1,0 +1,6 @@
+*.o
+*.cod
+*.hex
+*.lst
+*.err
+*.swp
