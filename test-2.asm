@@ -12,17 +12,13 @@ Start
 	CLRF	display
 
 Loop
-	BSF		display,0
+	INCF	display
 	MOVF	display,w
 	MOVWF	PORTC
 
 	CLRF	delayA
 	CLRF	delayB
 	CALL	delay
-
-	BCF		display,0
-	MOVF	display,w
-	MOVWF	PORTC
 
 	CLRF	delayA
 	CLRF	delayB
