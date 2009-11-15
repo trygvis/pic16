@@ -8,17 +8,24 @@ Start
 	BSF		STATUS,RP0		; select Register Page 1 
 	CLRF	TRISC			; make all C pins output
 
-	; Configuring port A0
-	MOVLW	0xff			; Make A input
-	MOVWF	TRISA
+	; Configuring port A and B
+	MOVLW	B'11111111'
+	MOVWF	TRISA			; Make A input
+	MOVWF	TRISB			; Make B input
 
 	BCF		STATUS,RP0		; RP=00
 
 	MOVLW	0x02
 	MOVWF	display
-Loop
 
-	MOVF	PORTA,W
+Loop
+	MOVF	PORTB,W
+	MOVWF	display
+	RRF		display,f
+	RRF		display,f
+	RRF		display,f
+	RRF		display,f
+	MOVF	display,w
 	MOVWF	PORTC
 	
 	GOTO	Loop
