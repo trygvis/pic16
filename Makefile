@@ -9,9 +9,6 @@ all: $(patsubst %.asm,%.hex,$(wildcard *.asm))
 %.hex:%.asm
 	$(AS) $<
 
-foo.hex: foo.c foo.h
-#	@$(CC) foo.c
-
 read-%:
 	@$(PK2) -GF$(patsubst write-%,%,$@)
 
