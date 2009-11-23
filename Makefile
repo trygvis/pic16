@@ -10,7 +10,7 @@ all: $(patsubst %.asm,%.hex,$(wildcard *.asm))
 	$(AS) $<
 
 read-%:
-	@$(PK2) -GF$(patsubst write-%,%,$@)
+	@$(PK2) -GF$(patsubst read-%,%,$@)
 
 write-%: %
 	@$(PK2) -M -F$(patsubst write-%,%,$@)
