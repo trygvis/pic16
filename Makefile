@@ -1,8 +1,12 @@
-DEVICE=PIC16F690
-CC=s/opt/local/bin/dcc -mpic16
-AS=/opt/local/bin/gpasm -p$(DEVICE)
-X=/Users/trygvis/tmp/elektronikk/PK2CMDv1-20MacOSX
-PK2=$(X)/pk2cmd -B$(X) -P$(DEVICE)
+GPUTILS = /Users/trygvis/opt/gputils-0.13.7
+CC      = /opt/local/bin/sdcc -mpic16
+AS      = $(GPUTILS)/bin/gpasm -p$(DEVICE)
+X       = /Users/trygvis/tmp/elektronikk/PK2CMDv1-20MacOSX
+PK2     = $(X)/pk2cmd -B$(X) -P$(DEVICE)
+
+ifndef DEVICE
+$(error DEVICE has to be defined!)
+endif
 
 all: $(patsubst %.asm,%.hex,$(wildcard *.asm))
 
