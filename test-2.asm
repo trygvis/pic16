@@ -1,12 +1,21 @@
-ERRORLEVEL -302 ;remove message about using proper bank
+ERRORLEVEL -302; Register in operand not in bank 0. Ensure bank bits are correct.
+ERRORLEVEL -305; Using default destination of 1 (file).
 
-#include <p16F690.inc> 
-
+ifdef __16F690
+#include <p16F690.inc>
 	__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _IESO_OFF & _FCMEN_OFF) 
+endif
+
+ifdef __16LF726
+#include <p16LF726.inc>
+	__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF )
+endif
+
 	org 0 
 Start 
 	BSF		STATUS,RP0      ;select Register Page 1 
-	CLRF	TRISC           ;make I/O Pin C2 an output 
+	CLRF	TRISC           ; C* outputs
+	CLRF	TRISA           ; A* outputs
 	BCF		STATUS,RP0      ;back to Register Page 0 
 
 	CLRF	display
@@ -14,7 +23,8 @@ Start
 Loop
 	INCF	display
 	MOVF	display,w
-	MOVWF	PORTC
+;	MOVWF	PORTC
+	MOVWF	PORTA
 
 	CLRF	delayA
 	CLRF	delayB
