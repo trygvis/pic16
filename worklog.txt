@@ -1,0 +1,3 @@
+2009-11-24: First serial character written
+
+2009-11-23: Portet test-2 to work on the new chip
