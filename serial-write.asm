@@ -21,8 +21,10 @@ InitPorts
 InitSerial					; See page 148, 16f726 manual
 	BSF		TRISC,7			; Make C7 input
 	BSF		TRISC,6			; Make C6 input
+	BCF		TXSTA,BRGH		; Disable high baud rates
+	MOVLW	D'103'			; 103 = 1200 @ 8MHz, BRGH=0, table 16-5, page 157
 	BSF		TXSTA,BRGH		; Enable high baud rates
-	MOVLW	D'51'			; 129 = 9600 @ 8MHz
+	MOVLW	D'51'			; 51 = 9600 @ 8MHz, BRGH=1, table 16-5, page 157
 	MOVWF	SPBRG
 	BSF		TXSTA,TXEN		; Enable transmitter circuitry
 	BCF		TXSTA,SYNC		; Clear the synchronous mode flag

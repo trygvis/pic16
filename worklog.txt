@@ -1,3 +1,18 @@
-2009-11-24: First serial character written
+2009-11-28: VICTORY! Serial communication is working. Wired up the MAX232 and
+            used another usb-serial dongle that I had lying around. Noticed
+            that I had bought 0.1uF capacitors instead of the 1.0uF capacitors
+            the MAX232 requires, but it still worked. I'll replace the MAX232
+            with a MAX232A.
+
+2009-11-25: Spend an evening trying to read the serial data through the TTL-232R
+            usb-to-serial thingy but couldn't get it to work. I think my
+            oscillioscope is broken.
+
+            Tried different power sources to make sure I understand how
+            everything work. Realized that my PIC part is a low-voltage part,
+            but I have a 5V serial cable.
+
+2009-11-24: First serial character written to pin, seen on oscilloscope.
+            Realized that the PIC was running on 8MHz.
 
 2009-11-23: Portet test-2 to work on the new chip
