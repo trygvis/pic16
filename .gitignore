@@ -4,3 +4,6 @@
 *.lst
 *.err
 *.swp
+*.pcap
+*.raw
+tcpdump/create_file

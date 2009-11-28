@@ -1,8 +1,45 @@
-2009-11-28: VICTORY! Serial communication is working. Wired up the MAX232 and
+2009-11-28: VICTORY II! Hand crafted a SLIP packet containing an ICMP ECHO 
+            reply message. Now that I have all the bytes required, time to
+            get the PIC to do the work!
+
+$ tcpdump -n -vvv -xx -XX -e -r tcpdump/out.pcap 
+reading from file tcpdump/out.pcap, link-type SLIP (SLIP)
+22:38:09.053778 O 40.00.90.fc.f9.ff.bf.98.f9.ff.bf.38.f9.ff.bf: (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto ICMP (1), length 28) 192.168.90.66 > 192.168.90.1: ICMP echo request, id 20, seq 10, length 8
+        0x0000:  0140 0090 fcf9 ffbf 98f9 ffbf 38f9 ffbf  .@..........8...
+        0x0010:  4500 001c 0000 4000 4001 054d c0a8 5a42  E.....@.@..M..ZB
+        0x0020:  c0a8 5a01 0800 f7e1 0014 000a            ..Z.........
+
+            VICTORY! Serial communication is working. Wired up the MAX232 and
             used another usb-serial dongle that I had lying around. Noticed
             that I had bought 0.1uF capacitors instead of the 1.0uF capacitors
             the MAX232 requires, but it still worked. I'll replace the MAX232
             with a MAX232A.
+
+            Having a well defined project statement makes it easier for me to 
+            focus so here it is:
+
+              Implement a card that will read the current temperature and
+              communicate over Ethernet using IPMI.
+
+            This is a big goal so I've broken it up a bit:
+
+             - Learn IP by sending characters over a serial line using SLIP. 
+
+               This requires way less hardware on the board and other 
+               hardware/software components.
+
+               Part goals:
+                * Transmit characters over a serial line
+                * Use interrupts to wait while transmitting the characters
+                * Send a single SLIP package containing an ICMP EHCO reply
+
+             - Control the ADC
+
+               Part goals:
+                * Read a value from the ADC
+                * Adjust the read value from the ADC with the NTC's coefficients
+
+             - Learn how to etch my own PCB cards
 
 2009-11-25: Spend an evening trying to read the serial data through the TTL-232R
             usb-to-serial thingy but couldn't get it to work. I think my
