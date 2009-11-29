@@ -7,3 +7,5 @@
 *.pcap
 *.raw
 tcpdump/create_file
+tcpdump/append_raw
+tcpdump/read_slip

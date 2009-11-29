@@ -10,6 +10,8 @@ endif
 
 all: $(patsubst %.asm,%.hex,$(wildcard *.asm))
 
+slip-write.hex: $(wildcard *.inc)
+
 %.hex:%.asm
 	@echo AS $<
 	@$(AS) $<

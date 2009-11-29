@@ -50,24 +50,9 @@ uint16_t chksum(uint16_t* buf, int len) {
     return result;
 }
 
-int main(char** args, int argc) {
+int main(int argc, char *argv[]) {
     pcap_dumper_t* pcap_dumper;
     pcap_t* pcap;
-
-    uint16_t buf[] = {
-        0x4500,
-        0x0028,
-        0x1ffd,
-        0x4000,
-        0x8006,
-        0x0000,
-        0xc0a8,
-        0x3b0a,
-        0xc0a8,
-        0x3b32
-    };
-//    chksum(buf, 20);
-//    exit(1);
 
     pcap = pcap_open_dead(DLT_SLIP, 8 * 1024);
     if(pcap == NULL) {

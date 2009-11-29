@@ -1,5 +1,9 @@
 LDFLAGS=-lpcap
 
-create_file: create_file.o
+all: create_file read_slip append_raw
 
-create_file.o: create_file.c slip.h
+append_raw.o: append_raw.c $(wildcard *.h)
+
+read_slip.o: read_slip.c $(wildcard *.h)
+
+create_file.o: create_file.c $(wildcard *.h)
