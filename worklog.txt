@@ -1,6 +1,21 @@
+2009-12-03: (small) VICTORY! Found the bug in the checksum calculator (missed an
+            INC FSR while iterating in 16 bit increments). Made lots of test
+            code for the checksum, should be easy to get the rest done now.
+
+2009-11-30: Spent an evening on trying to get the IP checksum method to work. No
+            go so far.
+
 2009-11-29: Made big progress today:
              - Got the PIC to write me a complete IP package header, without
                checksum.
+
+$ tcpdump -n -vvv -xx -XX -e -r tcpdump/serial.pcap
+reading from file tcpdump/serial.pcap, link-type SLIP (SLIP)
+16:43:47.352056 O 40.00.00.00.00.00.00.00.00.00.00.00.00.00.00: (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto ICMP (1), length 20, bad cksum 0 (->355)!) 193.168.90.66 > 193.168.90.1: [|icmp]
+        0x0000:  0140 0000 0000 0000 0000 0000 0000 0000  .@..............
+        0x0010:  4500 0014 0000 4000 4001 0000 c1a8 5a42  E.....@.@.....ZB
+        0x0020:  c1a8 5a01                                ..Z.
+
              - Divided up the assembly file into several (more or less)
                standalone .inc files. Should make it a bit easier to naviate
                the source code.

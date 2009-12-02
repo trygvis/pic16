@@ -11,6 +11,7 @@ endif
 all: $(patsubst %.asm,%.hex,$(wildcard *.asm))
 
 slip-write.hex: $(wildcard *.inc)
+checksum-test.hex: $(wildcard *.inc)
 
 %.hex:%.asm
 	@echo AS $<

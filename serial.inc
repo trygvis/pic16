@@ -19,8 +19,8 @@ serial_write_reg_spin
 
 serial_write_w_spin
 	MOVWF	TXREG
-	NOP				; This three instruction wait is a bit 
-	NOP				; of a hack. RTFM and figure out how to 
+	NOP				; This three instruction wait is a bit
+	NOP				; of a hack. RTFM and figure out how to
 	NOP				; handle this.
 	BSF	STATUS,RP0		; RP=01
 	BTFSS	TXSTA, TRMT		; 0=TSR full

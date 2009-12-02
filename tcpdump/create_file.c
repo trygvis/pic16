@@ -11,7 +11,8 @@ int little_endian = 1;
 
 uint16_t chksum(uint16_t* buf, int len) {
     int orig_len = len;
-    uint32_t result = 0;
+//    uint32_t result = 0;
+    uint16_t result = 0;
 
     if(len == 0) {
         return result;
@@ -22,35 +23,44 @@ uint16_t chksum(uint16_t* buf, int len) {
         exit(EXIT_FAILURE);
     }
 
-    /*
-    if(len == 1) {
-        if(little_endian) {
-            return result << 8;
-        }
-        else {
-            return result;
-        }
-    }
-    */
+    uint8_t r8 = 0;
     while(len) {
+        r8 += *buf & 0xff;
+        r8 += ((*buf) >> 8) & 0xff;
         uint16_t x = *buf;
         result += x;
-        printf("x=%04x, sum=% 5x\n", x, result);
+        printf("x=0x%04x, sum=0x%04x\n", x, result);
         len -= 2;
         buf += 1;
     }
 
-    result = ((result >> 16) + result & 0xffff);
-
-//    result = -result - 1;
+    result = result + 1;
     result = result ^ 0xffff;
+    result = 0xffff & result;
 
-    printf("len = 0x%0d, result = 0x%0x\n", orig_len, result);
+    //printf("len = 0x%0d, result = 0x%0x\n", orig_len, result);
+    r8 &= 0xff;
+    printf("len = 0x%0d, result = 0x%0x, result8 = 0x%0x\n", orig_len, result, r8);
 
     return result;
 }
 
 int main(int argc, char *argv[]) {
+
+    uint16_t buf[] = {
+        0x4500,     // ip_version_header ip_tos
+        0x0034,     // ip_length_h ip_length_l
+        0x4818,     // ip_ident_h ip_ident_l
+        0x4000,     // ip_flags_frag_h ip_frag_l
+        0x4006,     // ip_ttl ip_proto
+        0x0000,     // ip_checksum_h ip_checksum_l
+        0x0a01,     // ip_src_b1 ip_src_b2
+        0x014c,     // ip_src_b3 ip_src_b4
+        0x0a01,     // ip_dst_b1 ip_dst_b2
+        0x0101      // ip_dst_b3 ip_dst_b4
+    };
+    chksum(buf, 20);
+
     pcap_dumper_t* pcap_dumper;
     pcap_t* pcap;
 

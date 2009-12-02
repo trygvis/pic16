@@ -14,17 +14,17 @@ InitSerial				; See page 148, 16f726 manual
 	BSF	TRISC,7			; Make C7 input
 	BSF	TRISC,6			; Make C6 input
 	BCF	TXSTA,BRGH		; Disable high baud rates
-	MOVLW	D'103'			; 103 = 1200 @ 8MHz, BRGH=0, 
+	MOVLW	D'103'			; 103 = 1200 @ 8MHz, BRGH=0,
 					; table 16-5, page 157
 	BSF	TXSTA,BRGH		; Enable high baud rates
-	MOVLW	D'51'			; 51 = 9600 @ 8MHz, BRGH=1, 
+	MOVLW	D'51'			; 51 = 9600 @ 8MHz, BRGH=1,
 					; table 16-5, page 157
 	MOVWF	SPBRG
 	BSF	TXSTA,TXEN		; Enable transmitter circuitry
 	BCF	TXSTA,SYNC		; Clear the synchronous mode flag
 	BCF	STATUS,RP0		; RP=00
 	BSF	RCSTA,SPEN		; Enable AUSART, configures TX/CK I/O
-					; pin as output and RD/DT I/O pin as 
+					; pin as output and RD/DT I/O pin as
 					; input automatically
 Loop
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -38,7 +38,7 @@ Loop
 
 ;	Fill in the source and dest fields on both the IP and ICMP packet
 ;	CALL	icmp_echo_init_and_checksum_packet
-;	CALL	ip_checksum_packet
+	CALL	ip_checksum_packet
 
 	MOVLW	0xff			; Lights on while sending packet
 	MOVWF	PORTA
@@ -83,16 +83,7 @@ Loop
 
 	GOTO	Loop
 
-delay
-	DECFSZ	delayA,f
-	GOTO	delay
-	DECFSZ	delayB,f
-	GOTO	delay
-	RETURN
-
 	cblock	0x20
-delayA
-delayB
 display
 	endc
 

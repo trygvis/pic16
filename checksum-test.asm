@@ -30,7 +30,7 @@ Loop
 	MOVLW	0xff			; Lights on while sending packet
 	MOVWF	PORTA
 
-	; Send some junk to act as a delimiter
+	; Send some junk to act as a visual delimiter
 	MOVLW	"1"
 	CALL	serial_write_w_spin
 	MOVLW	"2"
@@ -44,51 +44,67 @@ Loop
 	MOVWF	ip_version_header
 	MOVLW	0x00
 	MOVWF	ip_tos
+
 	MOVLW	0x00
 	MOVWF	ip_length_h
 	MOVLW	0x34
 	MOVWF	ip_length_l
+
 	MOVLW	0x48
 	MOVWF	ip_ident_h
 	MOVLW	0x18
 	MOVWF	ip_ident_l
+
 	MOVLW	0x40
 	MOVWF	ip_flags_frag_h
 	MOVLW	0x00
 	MOVWF	ip_frag_l
 
-cs_test	MACRO	size
-	; FSR => ip_version_header
-	MOVLW	ip_version_header
-	MOVWF	FSR
+	MOVLW	0x40
+	MOVWF	ip_ttl
+	MOVLW	0x06
+	MOVWF	ip_proto
 
-	; serial_buf_size = checksum_len = size
-	MOVLW	size
-	MOVWF	serial_buf_size
-	MOVWF	checksum_len
+	MOVLW	0x00
+	MOVWF	ip_checksum_h
+	MOVLW	0x00
+	MOVWF	ip_checksum_l
 
-	CALL	checksum
+	MOVLW	0x0a
+	MOVWF	ip_src_b1
+	MOVLW	0x01
+	MOVWF	ip_src_b2
 
-	MOVFW	checksum_h
-	CALL	serial_write_w_spin
+	MOVLW	0x01
+	MOVWF	ip_src_b3
+	MOVLW	0x4c
+	MOVWF	ip_src_b4
 
-	MOVFW	checksum_l
-	CALL	serial_write_w_spin
+	MOVLW	0x0a
+	MOVWF	ip_dst_b1
+	MOVLW	0x01
+	MOVWF	ip_dst_b2
 
-	MOVLW	D'68'
-	CALL	serial_write_w_spin
-	ENDM
+	MOVLW	0x01
+	MOVWF	ip_dst_b3
+	MOVLW	0x01
+	MOVWF	ip_dst_b4
 
-	cs_test	D'0'
-	cs_test	D'2'
-	cs_test	D'4'
-	cs_test	D'6'
-	cs_test	D'8'
+;	MOVLW	0x00
+;	CALL	cs_test
+;	MOVLW	0x02
+;	CALL	cs_test
+;	MOVLW	0x04
+;	CALL	cs_test
+;	MOVLW	0x06
+;	CALL	cs_test
+	MOVLW	0x14
+	CALL	cs_test
 
 	MOVLW	SLIP_END
 	CALL	serial_write_w_spin
 
-	; Send some junk to act as a delimiter
+	; Send some junk to act as a visual delimiter
 	MOVLW	"3"
 	CALL	serial_write_w_spin
 	MOVLW	"2"
@@ -109,18 +125,34 @@ cs_test	MACRO	size
 
 	GOTO	Loop
 
-delay
-	DECFSZ	delayA,f
-	GOTO	delay
-	DECFSZ	delayB,f
-	GOTO	delay
+	; W = size
+cs_test
+	; serial_buf_size = checksum_len = size
+	MOVWF	serial_buf_size
+	MOVWF	checksum_len
+
+	; FSR -> ip_version_header
+	MOVLW	ip_version_header
+	MOVWF	FSR
+
+	CALL	checksum
+
+	MOVLW	0xff
+	CALL	serial_write_w_spin
+
+	MOVFW	checksum_h
+	CALL	serial_write_w_spin
+
+	MOVFW	checksum_l
+	CALL	serial_write_w_spin
+
+	MOVLW	0x62
+	CALL	serial_write_w_spin
 	RETURN
 
-	cblock	0x20
-delayA
-delayB
+	CBLOCK	0x20
 display
-	endc
+	ENDC
 
 #include <checksum.inc>
 #include <ip.inc>

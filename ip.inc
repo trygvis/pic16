@@ -38,7 +38,7 @@ ip_init_packet
 	MOVLW	D'0'			; ICMP=1, TCP=6, UDP=17
 	MOVWF	ip_proto
 
-	; Skip the checksum field, it will be cleared and calculated in 
+	; Skip the checksum field, it will be cleared and calculated in
 	; ip_checksum_packet
 
 	; Set the source and destination IPs
@@ -76,15 +76,14 @@ ip_checksum_packet
 	CALL	checksum
 
 	; Move the calculated checksum into the ip packet
-	MOVWF	checksum_l
-	MOVFW	ip_checksum_h
-	MOVWF	checksum_l
-	MOVFW	ip_checksum_l
+	MOVFW	checksum_l
+	MOVWF	ip_checksum_l
+	MOVFW	checksum_h
+	MOVWF	ip_checksum_h
 
 	RETURN
 
 	CBLOCK
-; TODO: This should be done in network order
 ; IP Packet
 ip_version_header
 ip_tos

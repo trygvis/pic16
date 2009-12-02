@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
     } while(byte != SLIP_END && !feof(in));
 
     fprintf(stderr, "Got %d junk bytes before an END\n", count - 1);
+    fflush(stderr);
 
     // Copy bytes until SLIP_END
     count = 0;
@@ -31,6 +32,7 @@ int main(int argc, char *argv[]) {
 //    } while(count < 32 && !feof(in));
 
     fprintf(stderr, "Got packet containing %d bytes\n", count);
+    fflush(stderr);
 
     fclose(in);
     fclose(out);
