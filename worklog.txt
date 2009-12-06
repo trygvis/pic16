@@ -1,3 +1,6 @@
+2009-12-06: YEAH! I own IP checksum. This was a helpful tool even if very hard
+            to understand at times: http://www.netfor2.com/checksum.html
+
 2009-12-03: (small) VICTORY! Found the bug in the checksum calculator (missed an
             INC FSR while iterating in 16 bit increments). Made lots of test
             code for the checksum, should be easy to get the rest done now.

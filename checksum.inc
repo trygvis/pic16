@@ -16,8 +16,8 @@ checksum
 	CLRF	checksum_l
 	CLRF	checksum_h
 
-	MOVLW	0x11
-	CALL	serial_write_w_spin
+;	MOVLW	0x11
+;	CALL	serial_write_w_spin
 
 	MOVF	checksum_len,f	; Update STATUS,Z for the while loop
 
@@ -28,30 +28,28 @@ _checksum_loop
 
 	; result_h += *buf
 	MOVF	INDF,w
-	CALL	serial_write_w_spin
 	ADDWF	checksum_h,f
-
-	; result_l += 1 if carry
-;	BTFSC	STATUS,C
-;	INCF	checksum_l,f
+;	MOVF	INDF,w
+;	CALL	serial_write_w_spin
 
 	; buf++
 	INCF	FSR,f
 
 	; result_l += *buf
 	MOVF	INDF,w
-	CALL	serial_write_w_spin
 	ADDWF	checksum_l,f
+;	MOVF	INDF,w
+;	CALL	serial_write_w_spin
 
 	; buf++
 	INCF	FSR,f
 
-	MOVF	checksum_h,w
-	CALL	serial_write_w_spin
-	MOVF	checksum_l,w
-	CALL	serial_write_w_spin
-	MOVLW	0x22
-	CALL	serial_write_w_spin
+;	MOVLW	0x22
+;	CALL	serial_write_w_spin
+;	MOVF	checksum_h,w
+;	CALL	serial_write_w_spin
+;	MOVF	checksum_l,w
+;	CALL	serial_write_w_spin
 
 	; checksum_len -= 2
 	DECF	checksum_len,f
@@ -60,18 +58,10 @@ _checksum_loop
 	GOTO	_checksum_loop
 
 _checksum_end
-	; result = result + 1
-;	MOVLW	1
-;	ADDWF	checksum_l,f
-;	BTFSC	STATUS,C
-;	INCF	checksum_h,f
-
 	; result = result ^ 0xffff
-;	COMF	checksum_l,f
-;	COMF	checksum_h,f
+	COMF	checksum_l,f
+	COMF	checksum_h,f
 
-	MOVLW	0x33
-	CALL	serial_write_w_spin
 	RETURN
 
 	CBLOCK
@@ -80,5 +70,4 @@ checksum_len
 ; Big endian
 checksum_h
 checksum_l
-checksum_overflow	; I wonder, is 8 overflow bits enough?
 	ENDC

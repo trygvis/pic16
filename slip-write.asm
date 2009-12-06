@@ -30,15 +30,18 @@ Loop
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 	CALL	ip_init_packet
+	CALL	slip_write_set_src_dst
 
 	; Prepare to create an ICMP ECHO packet
 	MOVLW	D'1'			; 1=ICMP
 	MOVWF	ip_proto
-	; TODO: ip_length_h/_l
+
+	CALL	ip_checksum_packet
 
 ;	Fill in the source and dest fields on both the IP and ICMP packet
 ;	CALL	icmp_echo_init_and_checksum_packet
-	CALL	ip_checksum_packet
+
+	; TODO: ip_length_h/_l
 
 	MOVLW	0xff			; Lights on while sending packet
 	MOVWF	PORTA
@@ -82,6 +85,31 @@ Loop
 	CALL	delay
 
 	GOTO	Loop
+
+slip_write_set_src_dst
+	; src = 10.1.1.76
+	MOVLW	0x0a
+	MOVWF	ip_src_b1
+	MOVLW	0x01
+	MOVWF	ip_src_b2
+
+	MOVLW	0x01
+	MOVWF	ip_src_b3
+	MOVLW	0x4c
+	MOVWF	ip_src_b4
+
+	; dst = 10.1.1.1
+	MOVLW	0x0a
+	MOVWF	ip_dst_b1
+	MOVLW	0x01
+	MOVWF	ip_dst_b2
+
+	MOVLW	0x01
+	MOVWF	ip_dst_b3
+	MOVLW	0x01
+	MOVWF	ip_dst_b4
+
+	RETURN
 
 	cblock	0x20
 display

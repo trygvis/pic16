@@ -134,7 +134,6 @@ cs_test
 	; FSR -> ip_version_header
 	MOVLW	ip_version_header
 	MOVWF	FSR
-
 	CALL	checksum
 
 	MOVLW	0xff

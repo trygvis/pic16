@@ -25,22 +25,35 @@ uint16_t chksum(uint16_t* buf, int len) {
 
     uint8_t r8 = 0;
     while(len) {
+        /*
         r8 += *buf & 0xff;
+        uint16_t c = ((*buf >> 8) + r8) >> 8;
         r8 += ((*buf) >> 8) & 0xff;
-        uint16_t x = *buf;
+        if(c) {
+            r8++;
+        }
+        */
+        uint32_t x = *buf;
+        uint16_t c = (x + result) >> 16;
         result += x;
-        printf("x=0x%04x, sum=0x%04x\n", x, result);
+        if(c) {
+            result++;
+        }
+//        printf("x=0x%04x, sum=0x%04x, sum8=0x%02x, c=%d\n", x, result, r8, c);
+        printf("x=0x%04x, sum=0x%04x, c=%d\n", x, result, c);
+//        printf("x=0x%04x, sum=0x%04x\n", x, result);
         len -= 2;
         buf += 1;
     }
 
-    result = result + 1;
+//    result = result + 1;
     result = result ^ 0xffff;
     result = 0xffff & result;
 
-    //printf("len = 0x%0d, result = 0x%0x\n", orig_len, result);
-    r8 &= 0xff;
-    printf("len = 0x%0d, result = 0x%0x, result8 = 0x%0x\n", orig_len, result, r8);
+    r8 = r8 ^ 0xff;
+//    printf("len = 0x%0x, result = 0x%0x, r8=0x%x\n", orig_len, result, r8);
+
+    printf("len = 0x%0x, result = 0x%0x\n", orig_len, result);
 
     return result;
 }
@@ -60,6 +73,47 @@ int main(int argc, char *argv[]) {
         0x0101      // ip_dst_b3 ip_dst_b4
     };
     chksum(buf, 20);
+
+    uint16_t test2[] = {
+        0x4500,
+        0x0014,
+        0x0000,
+        0x4000,
+        0x4001,
+        0x0000, // **/ 0x249a, // This is the correct checksum
+        0x0a01,
+        0x014c,
+        0x0a01,
+        0x0101
+    };
+    chksum(test2, 20);
+
+    uint16_t test3[] = {
+        0x4500,     // ip_version_header ip_tos
+        0x0014,     // ip_length_h ip_length_l
+        0x0000,     // ip_ident_h ip_ident_l
+        0x4000,     // ip_flags_frag_h ip_frag_l
+        0x4006,     // ip_ttl ip_proto
+        0x0000,     // ip_checksum_h ip_checksum_l
+        0x0a01,     // ip_src_b1 ip_src_b2
+        0x014c,     // ip_src_b3 ip_src_b4
+        0x0a01,     // ip_dst_b1 ip_dst_b2
+        0x0101      // ip_dst_b3 ip_dst_b4
+    };
+    chksum(test3, 20);
+
+    uint16_t test4[] = {
+        0x0100,
+        0xF203,
+        0xF4F5,
+        0xF6F7,
+        0x0000
+    };
+    chksum(test4, 10);
+
+//    uint16_t test3[] = {0xfe05};
+//    chksum(test3, 2);
+    exit(1);
 
     pcap_dumper_t* pcap_dumper;
     pcap_t* pcap;
