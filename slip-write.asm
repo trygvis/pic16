@@ -3,6 +3,8 @@ ERRORLEVEL -302; Register in operand not in bank 0. Ensure bank bits are correct
 #include <p16LF726.inc>
 	__config ( _INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _PLL_EN )
 
+#include <macros.inc>
+
 	ORG 0
 Start
 	BSF	STATUS,RP0		; RP=01
@@ -33,18 +35,17 @@ Loop
 	CALL	slip_write_set_src_dst
 
 	; Prepare to create an ICMP ECHO packet
-	MOVLW	D'1'			; 1=ICMP
-	MOVWF	ip_proto
+	MOVLF	D'1',ip_proto		; 1=ICMP, 6=TCP, 17(?)=UDP
+
+	CALL	icmp_init_echo		; This modifies the IP header
 
 	CALL	ip_checksum_packet
 
-;	Fill in the source and dest fields on both the IP and ICMP packet
-;	CALL	icmp_echo_init_and_checksum_packet
-
-	; TODO: ip_length_h/_l
-
-	MOVLW	0xff			; Lights on while sending packet
-	MOVWF	PORTA
+	CLRF	icmp_data_len		; No extra bytes just now
+	INCF	icmp_echo_seq_l,f
+	INCF	icmp_echo_seq_l,f
+	INCF	icmp_echo_ident_l,f
+	CALL	icmp_checksum
 
 	; Send some junk to act as a delimiter
 	MOVLW	"1"
@@ -56,9 +57,17 @@ Loop
 	MOVLW	SLIP_END
 	CALL	serial_write_w_spin
 
+	MOVLF	0xff, PORTA		; Lights on while sending packet
+
 	MOVLW	ip_packet_start
 	MOVWF	FSR
-	MOVLW	ip_header_size
+	MOVLW	ip_packet_len
+	MOVWF	serial_buf_size
+	CALL	serial_write_fsr_spin
+
+	MOVLW	icmp_packet_start
+	MOVWF	FSR
+	MOVLW	icmp_packet_len
 	MOVWF	serial_buf_size
 	CALL	serial_write_fsr_spin
 
@@ -88,25 +97,23 @@ Loop
 
 slip_write_set_src_dst
 	; src = 10.1.1.76
-	MOVLW	0x0a
+	MOVLW	D'10'
 	MOVWF	ip_src_b1
-	MOVLW	0x01
+	MOVLW	D'1'
 	MOVWF	ip_src_b2
-
-	MOVLW	0x01
+	MOVLW	D'1'
 	MOVWF	ip_src_b3
-	MOVLW	0x4c
+	MOVLW	D'76'
 	MOVWF	ip_src_b4
 
 	; dst = 10.1.1.1
-	MOVLW	0x0a
+	MOVLW	D'10'
 	MOVWF	ip_dst_b1
-	MOVLW	0x01
+	MOVLW	D'1'
 	MOVWF	ip_dst_b2
-
-	MOVLW	0x01
+	MOVLW	D'1'
 	MOVWF	ip_dst_b3
-	MOVLW	0x01
+	MOVLW	D'1'
 	MOVWF	ip_dst_b4
 
 	RETURN
@@ -116,6 +123,7 @@ display
 	endc
 
 #include <checksum.inc>
+#include <icmp.inc>
 #include <ip.inc>
 #include <serial.inc>
 #include <slip.inc>

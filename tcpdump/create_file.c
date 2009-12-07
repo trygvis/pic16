@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
         0x0a01,     // ip_dst_b1 ip_dst_b2
         0x0101      // ip_dst_b3 ip_dst_b4
     };
-    chksum(buf, 20);
+//    chksum(buf, 20);
 
     uint16_t test2[] = {
         0x4500,
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
         0x0a01,
         0x0101
     };
-    chksum(test2, 20);
+//    chksum(test2, 20);
 
     uint16_t test3[] = {
         0x4500,     // ip_version_header ip_tos
@@ -95,21 +95,21 @@ int main(int argc, char *argv[]) {
         0x4000,     // ip_flags_frag_h ip_frag_l
         0x4006,     // ip_ttl ip_proto
         0x0000,     // ip_checksum_h ip_checksum_l
-        0x0a01,     // ip_src_b1 ip_src_b2
-        0x014c,     // ip_src_b3 ip_src_b4
-        0x0a01,     // ip_dst_b1 ip_dst_b2
-        0x0101      // ip_dst_b3 ip_dst_b4
+        0xc1a8,     // ip_src_b1 ip_src_b2
+        0x5a42,     // ip_src_b3 ip_src_b4
+        0xc1a8,     // ip_dst_b1 ip_dst_b2
+        0x5a01      // ip_dst_b3 ip_dst_b4
     };
-    chksum(test3, 20);
+//    chksum(test3, 20);
 
     uint16_t test4[] = {
-        0x0100,
-        0xF203,
-        0xF4F5,
-        0xF6F7,
-        0x0000
+        0x0800,
+        0x0000,
+        0x0001,
+        0x0002
+//            0800 7590 0001 0002
     };
-    chksum(test4, 10);
+    chksum(test4, 8);
 
 //    uint16_t test3[] = {0xfe05};
 //    chksum(test3, 2);

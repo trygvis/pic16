@@ -1,3 +1,39 @@
+2009-12-07: Managed to create a working ICMP ECHO request:
+
+$ tcpdump -n -vvv -xx -XX -e -r serial.pcap
+reading from file serial.pcap, link-type SLIP (SLIP)
+22:28:02.879307 O 40.00.00.00.00.00.00.00.00.00.00.00.00.00.00: (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto ICMP (1), length 28) 10.1.1.76 > 10.1.1.1: ICMP echo request, id 1, seq 2, length 8
+        0x0000:  0140 0000 0000 0000 0000 0000 0000 0000  .@..............
+        0x0010:  4500 001c 0000 4000 4001 2493 0a01 014c  E.....@.@.$....L
+        0x0020:  0a01 0101 0800 f7fc 0001 0002            ............
+
+            Starting to use more macros, created a few useful shortcuts: MOVFF,
+            MOVLF which definitely make the code more readable.
+
+            I should probably wrap some of the debug output in pre-processor
+            #ifdefs or something smart. There's a few bits of debug serial
+            output which would be nice to be able to turn on/off while
+            assembling instead of commenting stuff in and out.
+
+            As a side note, I wonder if IPMI is just too big to bother to
+            implement on the PIC16. I've scanned through the IPMI specification
+            document and it seems quite doable if you have enough time on your
+            hands. I think I'll go with a custom UDP message, perhaps
+            SNMP-style. For future reference, here are the IPMI spec
+            documents:
+
+             - http://www.intel.com/design/servers/ipmi/spec.htm
+             - http://download.intel.com/design/servers/ipmi/IPMIv2_0rev1_0.pdf
+
+            Another side note, perhaps I should read the older but much simpler
+            IPMI 1.5 specs to see if they're sufficient.
+
+            I should move on to the SLIP interface now by properly escaping
+            outgoing bytes. I think I'll have to implement CTS/RTS support in
+            the serial interface too. I wonder how I should integrate all of
+            this with the reading of the packets. I guess a read-answer loop
+            should be sufficient.
+
 2009-12-06: YEAH! I own IP checksum. This was a helpful tool even if very hard
             to understand at times: http://www.netfor2.com/checksum.html
 
