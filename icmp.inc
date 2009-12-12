@@ -21,10 +21,10 @@ icmp_init_echo_or_reply
 	; TODO: Add carry
 	MOVLW	icmp_packet_len
 	ADDWF	ip_length_l,f
+
 	RETURN
 
 icmp_checksum
-
 	; Clear the checksum in the packet
 	CLRF	icmp_echo_checksum_h
 	CLRF	icmp_echo_checksum_l

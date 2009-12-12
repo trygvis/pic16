@@ -16,8 +16,10 @@ checksum
 	CLRF	checksum_l
 	CLRF	checksum_h
 
-;	MOVLW	0x11			; DEBUG
-;	CALL	serial_write_w_spin	; DEBUG
+	IFDEF	DEBUG_CHECKSUM		; DEBUG
+	MOVLW	0x11			; DEBUG
+	CALL	serial_write_w_spin	; DEBUG
+	ENDIF				; DEBUG
 
 ; Same as checksum, but does not clear out the checksum_h/l registers. Used to
 ; keep a runnig checksum over different buffers.
@@ -29,31 +31,54 @@ _checksum_loop
 	BTFSC	STATUS,Z
 	GOTO	_checksum_end
 
-;	MOVLW	0x22			; DEBUG
-;	CALL	serial_write_w_spin	; DEBUG
+	IFDEF	DEBUG_CHECKSUM		; DEBUG
+	MOVLW	0x23			; DEBUG
+	CALL	serial_write_w_spin	; DEBUG
+	ENDIF				; DEBUG
 
-;	MOVF	INDF,w			; DEBUG
-;	CALL	serial_write_w_spin	; DEBUG
-	; result_h += *buf
+	IFDEF	DEBUG_CHECKSUM		; DEBUG
+	MOVF	INDF,w			; DEBUG
+	CALL	serial_write_w_spin	; DEBUG
+	ENDIF				; DEBUG
+
+	; checksum_h += *buf
 	MOVF	INDF,w
 	ADDWF	checksum_h,f
+
+	; if(carry) checksum_l++
+	MOVLW	1			; This does not ruin STATUS, C
+	BTFSC	STATUS, C
+	ADDWF	checksum_l,f		; Can't use INCF, need to update STATUS, C
+
+	; if(carry) checksum_h++
+	BTFSC	STATUS, C
+	INCF	checksum_h,f
 
 	; buf++
 	INCF	FSR,f
 
-;	MOVF	INDF,w			; DEBUG
-;	CALL	serial_write_w_spin	; DEBUG
+	IFDEF	DEBUG_CHECKSUM		; DEBUG
+	MOVF	INDF,w			; DEBUG
+	CALL	serial_write_w_spin	; DEBUG
+	ENDIF				; DEBUG
+
 	; result_l += *buf
 	MOVF	INDF,w
 	ADDWF	checksum_l,f
 
+	; if(carry) checksum_h++
+	BTFSC	STATUS, C
+	INCF	checksum_h,f
+
 	; buf++
 	INCF	FSR,f
 
-;	MOVF	checksum_h,w		; DEBUG
-;	CALL	serial_write_w_spin	; DEBUG
-;	MOVF	checksum_l,w		; DEBUG
-;	CALL	serial_write_w_spin	; DEBUG
+	IFDEF	DEBUG_CHECKSUM		; DEBUG
+	MOVF	checksum_h,w		; DEBUG
+	CALL	serial_write_w_spin	; DEBUG
+	MOVF	checksum_l,w		; DEBUG
+	CALL	serial_write_w_spin	; DEBUG
+	ENDIF				; DEBUG
 
 	; checksum_len -= 2
 	DECF	checksum_len,f
@@ -66,12 +91,14 @@ _checksum_end
 	COMF	checksum_h,f
 	COMF	checksum_l,f
 
-;	MOVLW	0x33			; DEBUG
-;	CALL	serial_write_w_spin	; DEBUG
-;	MOVFW	checksum_h		; DEBUG
-;	CALL	serial_write_w_spin	; DEBUG
-;	MOVFW	checksum_l		; DEBUG
-;	CALL	serial_write_w_spin	; DEBUG
+	IFDEF	DEBUG_CHECKSUM		; DEBUG
+	MOVLW	0x33			; DEBUG
+	CALL	serial_write_w_spin	; DEBUG
+	MOVFW	checksum_h		; DEBUG
+	CALL	serial_write_w_spin	; DEBUG
+	MOVFW	checksum_l		; DEBUG
+	CALL	serial_write_w_spin	; DEBUG
+	ENDIF				; DEBUG
 
 	RETURN
 

@@ -33,46 +33,29 @@ Loop
 
 	CALL	ip_init_packet
 	CALL	slip_write_set_src_dst
-
-	; Prepare to create an ICMP ECHO packet
-	MOVLF	D'1',ip_proto		; 1=ICMP, 6=TCP, 17(?)=UDP
-
 	CALL	icmp_init_echo		; This modifies the IP header
 
-	CALL	ip_checksum_packet
+	; Create an ICMP ECHO packet
+	MOVLF	.1,ip_proto		; 1=ICMP, 6=TCP, 17(?)=UDP
 
 	CLRF	icmp_data_len		; No extra bytes just now
-	INCF	icmp_echo_seq_l,f
-	INCF	icmp_echo_seq_l,f
-	INCF	icmp_echo_ident_l,f
-	CALL	icmp_checksum
+	MOVLF	1, icmp_echo_ident_l
+	MOVLF	2, icmp_echo_seq_l
 
-	; Send some junk to act as a delimiter
-	MOVLW	"1"
-	CALL	serial_write_w_spin
-	MOVLW	"2"
-	CALL	serial_write_w_spin
-	MOVLW	"3"
-	CALL	serial_write_w_spin
-	MOVLW	SLIP_END
-	CALL	serial_write_w_spin
+	CALL	icmp_checksum
+	CALL	ip_checksum_packet
 
 	MOVLF	0xff, PORTA		; Lights on while sending packet
 
-	MOVLW	ip_packet_start
-	MOVWF	FSR
-	MOVLW	ip_packet_len
-	MOVWF	serial_buf_size
-	CALL	serial_write_fsr_spin
-
-	MOVLW	icmp_packet_start
-	MOVWF	FSR
-	MOVLW	icmp_packet_len
-	MOVWF	serial_buf_size
-	CALL	serial_write_fsr_spin
-
-	MOVLW	SLIP_END
+	; Send some junk to act as a delimiter
+	MOVLW	"1"
 	CALL	serial_write_w_spin
+	MOVLW	"2"
+	CALL	serial_write_w_spin
+	MOVLW	"3"
+	CALL	serial_write_w_spin
+
+	CALL	slip_send_ip_icmp_echo_data
 
 	; Send some junk to act as a delimiter
 	MOVLW	"3"
@@ -82,8 +65,7 @@ Loop
 	MOVLW	"1"
 	CALL	serial_write_w_spin
 
-	MOVLW	0x00			; Lights off
-	MOVWF	PORTA
+	MOVLF	0x00, PORTA		; Lights off
 
 	CLRF	delayA
 	CLRF	delayB
@@ -97,24 +79,28 @@ Loop
 
 slip_write_set_src_dst
 	; src = 10.1.1.76
-	MOVLW	D'10'
-	MOVWF	ip_src_b1
-	MOVLW	D'1'
-	MOVWF	ip_src_b2
-	MOVLW	D'1'
-	MOVWF	ip_src_b3
-	MOVLW	D'76'
-	MOVWF	ip_src_b4
+	MOVLF	D'10', ip_src_b1
+	MOVLF	D'1', ip_src_b2
+	MOVLF	D'1', ip_src_b3
+	MOVLF	D'76', ip_src_b4
 
 	; dst = 10.1.1.1
-	MOVLW	D'10'
-	MOVWF	ip_dst_b1
-	MOVLW	D'1'
-	MOVWF	ip_dst_b2
-	MOVLW	D'1'
-	MOVWF	ip_dst_b3
-	MOVLW	D'1'
-	MOVWF	ip_dst_b4
+	MOVLF	D'10', ip_dst_b1
+	MOVLF	D'1', ip_dst_b2
+	MOVLF	D'1', ip_dst_b3
+	MOVLF	D'1', ip_dst_b4
+
+	; src = 192.168.90.66
+	MOVLF	.192, ip_src_b1
+	MOVLF	.168, ip_src_b2
+	MOVLF	.90, ip_src_b3
+	MOVLF	.66, ip_src_b4
+
+	; dst = 192.168.90.1
+	MOVLF	.192, ip_dst_b1
+	MOVLF	.168, ip_dst_b2
+	MOVLF	.90, ip_dst_b3
+	MOVLF	.1, ip_dst_b4
 
 	RETURN
 

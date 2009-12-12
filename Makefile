@@ -13,9 +13,14 @@ all: $(patsubst %.asm,%.hex,$(wildcard *.asm))
 slip-write.hex: $(wildcard *.inc)
 checksum-test.hex: $(wildcard *.inc)
 
+DEFINES =
+ifdef DEBUG_CHECKSUM
+DEFINES = --define DEBUG_CHECKSUM
+endif
+
 %.hex:%.asm
 	@echo AS $<
-	@$(AS) $<
+	@$(AS) $(DEFINES) $<
 
 read-%:
 	@$(PK2) -GF$(patsubst read-%,%,$@)

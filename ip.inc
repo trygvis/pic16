@@ -47,7 +47,6 @@ ip_init_packet
 
 ; Calculate checksum
 ip_checksum_packet
-
 	; Clear the checksum in the packet
 	CLRF	ip_checksum_h
 	CLRF	ip_checksum_l

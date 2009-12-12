@@ -1,6 +1,8 @@
 ERRORLEVEL -302; Register in operand not in bank 0. Ensure bank bits are correct.
 
 #include <p16LF726.inc>
+#include <macros.inc>
+
 	__config ( _INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _PLL_EN )
 
 	ORG 0
@@ -155,6 +157,7 @@ display
 
 #include <checksum.inc>
 #include <ip.inc>
+#include <icmp.inc>
 #include <serial.inc>
 #include <slip.inc>
 #include <util.inc>

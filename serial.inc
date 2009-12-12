@@ -2,6 +2,7 @@
 
 ; Writes serial_buf_size bytes to the serial port using indirect addressing
 serial_write_fsr_spin
+	; TODO: the INCF+DECF+BTFSC should be replaced with the structure in checksum.inc
 	INCF	serial_buf_size,f
 _serial_write_fsr_spin
 	DECF	serial_buf_size,f

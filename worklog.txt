@@ -1,3 +1,16 @@
+2009-12-09-12: Worked on a bug in the checksum, implemented SLIP.
+            Had to implement lots of C code to fully understand how the 8 bit
+            additions has to be done with carries and all. A major pain in the
+            ass, and I'm still not sure if it covers all cases or not.
+
+            Split out the chksum method into checksum.h/c and created a
+            chksum_test.c to run it through a set of test cases.
+
+            Properly implementing a function to write out SLIP-encoded bytes
+            which seems to work. Implemented read_slip.c to decode the SLIP
+            stream. Should perhaps split out the generic SLIP stuff from the
+            IP/ICMP specific parts, but I really don't care now.
+
 2009-12-07: Managed to create a working ICMP ECHO request:
 
 $ tcpdump -n -vvv -xx -XX -e -r serial.pcap
