@@ -117,13 +117,9 @@ Loop
 	MOVLW	0x00			; Lights off
 	MOVWF	PORTA
 
-	CLRF	delayA
-	CLRF	delayB
-	CALL	delay
+	DELAY16	0x00,0x00
 
-	CLRF	delayA
-	CLRF	delayB
-	CALL	delay
+	DELAY16	0x00,0x00
 
 	GOTO	Loop
 

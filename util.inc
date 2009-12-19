@@ -1,13 +1,18 @@
 ; vim: set asmsyntax=asm
 
-delay
-	DECFSZ	delayA,f
+delay16
+delay				; TODO: Deprecated
+	DECFSZ	delay_l,f
 	GOTO	delay
-	DECFSZ	delayB,f
+	DECFSZ	delay_h,f
 	GOTO	delay
 	RETURN
 
 	CBLOCK
-delayA
-delayB
+delay_l
+delay_h
+
+intr_status
+intr_w
+intr_pclath
 	ENDC

@@ -23,3 +23,31 @@ ADD16   MACRO   DST,SRC
         INCF    (SRC)+1,W       ; Add one for carry
         ADDWF   (DST)+1,F       ; Add high byte into DST
         ENDM
+
+DELAY16	MACRO	H,L
+	MOVLW	H
+	MOVWF	delay_h
+	MOVLW	L
+	MOVWF	delay_l
+	CALL	delay16
+	ENDM
+
+ISR_START MACRO
+	MOVWF	intr_w
+	SWAPF	STATUS, W
+	BANKSEL	intr_status
+	MOVWF	intr_status
+	MOVF	PCLATH, W
+	MOVWF	intr_pclath
+	ENDM
+
+ISR_END MACRO
+	BANKSEL	intr_status
+	MOVF	intr_pclath, W
+	MOVWF	PCLATH
+	SWAPF   intr_status, W
+	MOVWF   STATUS
+	SWAPF   intr_w, F
+	SWAPF   intr_w, W
+	RETFIE
+	ENDM
