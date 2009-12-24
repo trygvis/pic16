@@ -16,6 +16,8 @@ _50uS_Delay	set	(_ClkOut/200000)
 #define	_SCL	PORTB,0
 #define	_SDA	PORTB,1
 
+#define _I2C_PORT	PORTB
+
 #define	_SCL_TRIS	_trisb,0
 #define	_SDA_TRIS	_trisb,1
 

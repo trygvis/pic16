@@ -26,7 +26,7 @@ LSB	EQU	0
 MSB	EQU	7
 
 ; Settings for the i2c module
-#define _ENABLE_BUS_FREE_TIME 0
+#define _ENABLE_BUS_FREE_TIME 1
 #define _CLOCK_STRETCH_CHECK 0
 #include <i2c.h>
 
@@ -45,14 +45,14 @@ Start
 
 	BANKSEL	display_port
 	CLRF	display_port
+	CLRF	display
 
 	; Initialize the i2c
 	CALL	InitI2CBus_Master
 	BSF	INTCON, GIE
 
-	BANKSEL	display_port
-
 	; Make some noise for the Logic!
+	BANKSEL	display_port
 	BSF	display_port, display_rd
 	BCF	display_port, display_rd
 	BSF	display_port, display_rd
@@ -60,19 +60,52 @@ Start
 	BSF	display_port, display_rd
 	BCF	display_port, display_rd
 Loop
-	BSF	display_port, display_rd
+	BSF	display, display_rd
+	CALL	ShowDisplay
 
 	LOAD_ADDR_8 B'10010000'
 
+	; Test: TxmtStartBit + SendData
+	BCF	display, display_rd	; Blink RD after loading address
+	CALL	ShowDisplay		; Blink RD after loading address
+	BSF	display, display_rd	; Blink RD after loading address
+	CALL	ShowDisplay		; Blink RD after loading address
+
+	CALL	TxmtStartBit		; TxmtStartBit
+
+	BCF	display, display_rd	; Blink RD after loading address
+	CALL	ShowDisplay		; Blink RD after loading address
+	BSF	display, display_rd	; Blink RD after loading address
+	CALL	ShowDisplay		; Blink RD after loading address
+
+	GOTO	FailLoop
+
+	MOVLF	B'10101010', DataByte
+	CALL	SendData		; SendData
+
+	BCF	display, display_rd	; Blink RD after loading address
+	CALL	ShowDisplay		; Blink RD after loading address
+	BSF	display, display_rd	; Blink RD after loading address
+	CALL	ShowDisplay		; Blink RD after loading address
+
+	GOTO	FailLoop
+
+;	CALL	ShowDisplay
 ;	I2C_READ 2, i2c_temp_h
 ; This is more or less copied from I2C_READ
 	CALL	TxmtStartBit		; send START bit
+	CALL	ShowDisplay
 	BSF	_Slave_RW		; We're reading
 	CALL	Txmt_Slave_Addr
+
+	CALL	ShowDisplay
+;	GOTO	SilentLoop
+
 	BTFSC	_Txmt_Success
 	GOTO	FailLoop
 
-	GOTO	SuccessLoop
+	GOTO	FailLoop
+;	GOTO	SuccessLoop
 
 ;	CALL	GetData
 ;	BTFSC	_Txmt_Success
@@ -86,38 +119,50 @@ Loop
 
 ;	CALL	TxmtStopBit
 
-	BCF	display_port, display_rd
+	BCF	display, display_rd
+	CALL	ShowDisplay
 
 ;	DELAY16	0xff, 0xff
 ;	DELAY16	0xff, 0xff
 
 ;	GOTO	Loop
 
+SilentLoop
+	BCF	INTCON, GIE
+	CALL	ShowDisplay
+	GOTO	SilentLoop
+
 SuccessLoop
 	BCF	INTCON, GIE
-	CLRF	display_port
 
 _SuccessLoop
-	BSF	display_port, display_rd
-;	DELAY16	0xff, 0xff
+	BSF	display, display_rd
+	CALL	ShowDisplay
 
-	BCF	display_port, display_rd
-;	DELAY16	0xff, 0xff
+	BCF	display, display_rd
+	CALL	ShowDisplay
 
 	GOTO	_SuccessLoop
 
 FailLoop
 	BCF	INTCON, GIE
-	CLRF	display_port
 
 _FailLoop
-	BSF	display_port, display_fail
-;	DELAY16	0xff, 0xff
+	BSF	display, display_fail
+	CALL	ShowDisplay
 
-	BCF	display_port, display_fail
-;	DELAY16	0xff, 0xff
+	BCF	display, display_fail
+	CALL	ShowDisplay
 
 	GOTO	_FailLoop
+
+ShowDisplay
+	MOVFF	Bus_Status, display_tmp
+	BCF	display_tmp, display_rd
+	BCF	display_tmp, display_fail
+	MOVFW	display
+	IORWF	display_tmp, W
+	MOVWF	display_port
 
 ; This should be in the i2c_low.inc file or something
 Interrupt
@@ -136,11 +181,12 @@ MayBeOtherInt:
 	ISR_END
 
 	CBLOCK 0x20
-;display
+display
+display_tmp
 	ENDC
 display_port	equ	PORTA
-display_rd	equ	0
-display_fail	equ	1
+display_rd	equ	2
+display_fail	equ	3
 
 	CBLOCK
 i2c_temp_h

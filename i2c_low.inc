@@ -24,6 +24,7 @@
 ;					Register File Variables
 
 
+		; It is assumed that these variables get placed in the first memory bank
 		CBLOCK
 			SlaveAddr		; Slave Addr must be loader into this reg
 			SlaveAddrHi		; for 10 bit addressing mode
@@ -31,8 +32,8 @@
 			BitCount		; The bit number (0:7) transmitted or received
 			Bus_Status		; Status Reg of I2C Bus for both TXMT & RCVE
 			Bus_Control		; control Register of I2C Bus
-			DelayCount
-			DataByteCopy		; copy of DataByte for Left Shifts (destructive)
+;			DelayCount
+;			DataByteCopy		; copy of DataByte for Left Shifts (destructive)
 
 			SubAddr			; sub-address of slave (used in I2C_HIGH.ASM)
                         SrcPtr			; source pointer for data to be transmitted
@@ -43,14 +44,27 @@
 			_End_I2C_Ram		; unused, only for ref of end of RAM allocation
                 ENDC
 
+		; This is the GP area of 80 bytes in page 1
+		CBLOCK	0xa0
+			DataByteCopy		; copy of DataByte for Left Shifts (destructive)
+		ENDC
+
+		; This is the GP area that's accessible from all banks
+		CBLOCK	70
+			DelayCount
+		ENDC
 
 ;********************************************************************************************************
 ;				I2C Bus Initialization
 ;	
+; Pre:
+;  RP=xx
+; Post:
+;  RP=xx
 ;********************************************************************************************************
 InitI2CBus_Master:
 	
-	bcf	STATUS,RP0
+	banksel	PORTB
 	movf	PORTB,W
 	andlw	0xFC		; do not use BSF & BCF on Port Pins
 	movwf	PORTB		; set SDA & SCL to zero. From Now on, simply play with tris
@@ -62,8 +76,11 @@ InitI2CBus_Master:
 ;*********************************************************************************************************
 ;					Send Start Bit
 ;
+; Pre:
+;  RP=0x
+; Post:
+;  RP=00
 ;*********************************************************************************************************
-
 TxmtStartBit:
 		bsf	STATUS,RP0		; select page 1
 		bsf	_SDA		; set SDA high
@@ -79,6 +96,7 @@ TxmtStartBit:
 ;
 		bsf	_Bus_Busy	; on a start condition bus is busy
 ;
+		bcf	STATUS,RP0
 		return
 
 
@@ -103,6 +121,7 @@ TxmtStopBit:
 ;
 		bcf	_Bus_Busy	; on a stop condition bus is considered Free
 ;
+		bcf	STATUS,RP0
 		return	
 
 
@@ -129,9 +148,14 @@ AbortTransmission:
 ;
 ;   If desired, the failure may tested by the bits in Bus Status Reg
 ;
+; Pre:
+;  RP=0x
+; Post:
+;  RP=xx
 ;*********************************************************************************************************
 
 Txmt_Slave_Addr:
+	bcf	STATUS,RP0
 	bcf	_ACK_Error		; reset Acknowledge error bit
 	btfss	_10BitAddr
 	goto	SevenBitAddr
@@ -223,6 +247,10 @@ _AddrSendFail:
 ;	this feature can be disabled during Assembly time by setting
 ;	_CLOCK_STRETCH_ENABLED must be set to FALSE.
 ;
+; Pre:
+;  RP=00
+; Post:
+;  RP=00
 ;*********************************************************************************************************
 SendData:
 
@@ -234,21 +262,21 @@ SendData:
 			
 ;
 TxmtByte:
-		movf	DataByte,W
-                movwf	DataByteCopy	; make copy of DataByte 
 		bsf	_Txmt_Progress	; set Bus status for txmt progress
 		bcf	_Txmt_Success	; reset status bit
 		movlw	0x08
 		movwf	BitCount
-		bsf	STATUS,RP0
-    if _CLOCK_STRETCH_CHECK
+		movf	DataByte,W
+		bsf	STATUS,RP0	; Bank x1
+                movwf	DataByteCopy	; make copy of DataByte which is in the right memory bank
+	if _CLOCK_STRETCH_CHECK
 ;	 set TMR0 to INT CLK timeout for 1 mSec 
 ;	 do not disturb user's selection of RPUB in OPTION Register
 ;
 		movf	OPTION_REG,W
 		andlw	_OPTION_INIT	; defined in I2C.H header file
 		movwf	OPTION_REG
-    endif
+	endif
 
 TxmtNextBit:
 		clrwdt			; clear WDT, set for 18 mSec
@@ -261,7 +289,7 @@ TxmtNextBit:
 		bsf	_SCL		; set clock high , check if clock is high, else clock being stretched
 		call	Delay40uSec	; guareentee min HIGH TIME tHIGH
 	if _CLOCK_STRETCH_CHECK
-		bcf	STATUS,RP0
+		bcf	STATUS,RP0	; Bank x0
 		clrf	TMR0		; clear TMR0
 		bcf	INTCON,T0IF		; clear any pending flags
 		bsf	INTCON,T0IE		; elable TMR0 Interrupt
@@ -269,11 +297,10 @@ TxmtNextBit:
 Check_SCL_1:
 		btfsc	_TIME_OUT_	; if TMR0 timeout or Error then Abort & return
 		goto	Bus_Fatal_Error	; Possible FATAL Error on Bus
-		bcf	STATUS,RP0 
 		btfss	_SCL		; if clock not being stretched, it must be high
 		goto	Check_SCL_1	; loop until SCL high or TMR0 timeout interrupt
 		bcf	INTCON,T0IE		; Clock good, diable TMR0 interrupts
-                bsf	STATUS,RP0
+		bsf	STATUS,RP0	; Bank x1
 	endif
 		decfsz	BitCount, F
 		goto	TxmtNextBit
@@ -285,11 +312,10 @@ Check_SCL_1:
 		call	Delay47uSec	; guareentee min LOW TIME tLOW & Setup time
 		bsf	_SCL		; clock for slave to ACK
 		call	Delay40uSec	; guareentee min HIGH TIME tHIGH	
-		bcf	STATUS,RP0		; select PAGE 0 to test PortB pin SDA
+		bcf	STATUS,RP0	; Bank 00
 		btfsc	_SDA		; SDA should be pulled low by slave if OK
                 goto	_TxmtErrorAck
 ;
-		bsf	STATUS,RP0
 		bcf	_SCL		; reset clock
 
 		bcf	_Txmt_Progress	; reset TXMT bit in Bus Status
@@ -298,6 +324,7 @@ Check_SCL_1:
 		return
 _TxmtErrorAck:
 		RELEASE_BUS
+		bcf	STATUS,RP0	; Bank 00
 		bcf	_Txmt_Progress	; reset TXMT bit in Bus Status
 		bcf	_Txmt_Success	; transmission NOT successful
 		bsf	_ACK_Error	; No ACK From Slave
@@ -430,10 +457,6 @@ Bus_Fatal_Error:
 ;
 ;*********************************************************************************************************
 ;
-
-foo1 equ ((_50uS_Delay-5)/3 + 1) ; 4
-foo2 equ ((_47uS_Delay-8)/3 + 1) ; 3
-foo3 equ ((_40uS_Delay-8)/3 + 1) ; 2
 
 Delay50uSec:
 	movlw	((_50uS_Delay-5)/3 + 1)

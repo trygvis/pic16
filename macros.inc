@@ -24,6 +24,12 @@ ADD16   MACRO   DST,SRC
         ADDWF   (DST)+1,F       ; Add high byte into DST
         ENDM
 
+DELAY8	MACRO	L
+	MOVLW	L
+	MOVWF	delay_l
+	CALL	delay8
+	ENDM
+
 DELAY16	MACRO	H,L
 	MOVLW	H
 	MOVWF	delay_h
