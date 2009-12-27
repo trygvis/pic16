@@ -1,10 +1,12 @@
-GPUTILS = /Users/trygvis/opt/gputils-0.13.7
-SDCC_HOME = $(HOME)/opt/sdcc
+# Makefile.local must define:
+#  DEVICE
+#  SDCC_HOME
+#  GPUTILS_HOME
+include Makefile.local
 
 CC      = $(SDCC_HOME)/bin/sdcc -mpic16
-AS      = $(GPUTILS)/bin/gpasm -p$(DEVICE)
-X       = /Users/trygvis/tmp/elektronikk/PK2CMDv1-20MacOSX
-PK2     = $(X)/pk2cmd -B$(X) -PPIC$(DEVICE)
+AS      = $(GPUTILS_HOME)/bin/gpasm -p$(DEVICE)
+PK2     = $(PK2_HOME)/pk2cmd -B$(PK2_HOME) -PPIC$(DEVICE)
 
 ifndef DEVICE
 $(error DEVICE has to be defined!)

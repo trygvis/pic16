@@ -1,0 +1,30 @@
+GPUTILS = /Users/trygvis/opt/gputils-0.13.7
+AS       = $(GPUTILS)/bin/gpasm -p$(DEVICE)
+PK2_HOME = /Users/trygvis/tmp/elektronikk/PK2CMDv1-20MacOSX
+PK2      = $(PK2_HOME)/pk2cmd -B$(PK2_HOME) -PPIC$(DEVICE)
+
+ifndef DEVICE
+$(error DEVICE has to be defined!)
+endif
+
+%.hex:%.asm
+	@echo AS $<
+	@$(AS) $(DEFINES) $<
+
+read-%:
+	@$(PK2) -GF$(patsubst read-%,%,$@)
+
+write-%: %
+	@$(PK2) -M -F$(patsubst write-%,%,$@)
+
+on:
+	@$(PK2) -T
+
+off:
+	@$(PK2) -W
+
+erase:
+	@$(PK2) -E
+
+identify:
+	@$(PK2) -I

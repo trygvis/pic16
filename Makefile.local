@@ -1,0 +1,5 @@
+DEVICE=16LF726
+
+GPUTILS_HOME = /Users/trygvis/opt/gputils-0.13.7
+SDCC_HOME = $(HOME)/opt/sdcc
+PK2_HOME = /Users/trygvis/tmp/elektronikk/PK2CMDv1-20MacOSX
