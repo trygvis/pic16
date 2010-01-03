@@ -61,6 +61,17 @@ SDA_LOW		MACRO
 	BCF	i2c_port, i2c_sda
 	ENDM
 
+; Sleep routines. Matches table 16 in the M24C04 data sheet
+; TODO: Perhaps define these as just NOP sequences
+#define I2C_DELAY4	DELAY8 .3
+#define I2C_DELAY4u7	DELAY8 .4
+
+#define I2C_SLEEP_tCHDX	I2C_DELAY4u7
+#define I2C_SLEEP_tDLCL	I2C_DELAY4
+#define I2C_SLEEP_tCHDH	I2C_DELAY4
+#define I2C_SLEEP_tCLCH	I2C_DELAY4u7
+#define I2C_SLEEP_tCHCL	I2C_DELAY4
+
 ; Initializes the registers for i2c transfer
 
 i2c_initialise
@@ -93,47 +104,78 @@ i2c_release
 
 ; i2c start condition:
 ;
-;       |           |       |       |
-;    ---+--.        |,-----.|       |,--- . .
-; SCL   |   \       |       |       |
-;       |    \-----/|       |\-----/|
-;       |           |       |       |
-;    --\       ,----|-------|--. ,--|---- . .
-; SDA   \     /     |       |   X   |
-;       |\---/------|-------|--/ \--|---- . .
-;       |           |       |       |
-;    Start          \ SDA  / \ SDA /
-;   condition        input   change
+;           | tCHDX | tDLCL |   
+;           |,------+------.|      
+; SCL       |       |       |      
+;      ----'|       |       |`-----
+;           |       |       |   
+;      -----+------.|       |      
+; SDA       |       |       |      
+;           |       |`------+---
+;           |       |       |   
+;                Start         
+;              condition      
 
 ; Creates an i2c start condition
-; Note that SCL stays high
+; Note:
+;  - SCL stays high after completion
+;  - The routine will sleep tCHDX before creating the start condition
+;  - The routine will sleep tDLCL after creating the start condition
 i2c_send_start
 	BANKSEL	i2c_bank
-	SCL_HIGH			; This should not be required
+	SCL_HIGH
+	I2C_SLEEP_tCHDX
 	SDA_LOW
+	I2C_SLEEP_tDLCL
 	RETURN
 
 ; i2c stop condition:
 ;
-;                        |
-;     . . --.         ,--|------------
-; SCL        \       /   |
-;             \-----/    |
-;                        |
-;     . . ------,        |,------
-; SDA            \       |
-;     . . --------\-----/|
-;                        |
-;                      Stop
-;                   Condition
+;           | tCHDL |  tDHDL  |
+;           |,------|---------+--
+; SCL       |       |         |
+;     -----'|       |         |
+;           |       |         |
+;     -.    |       |,-------.|
+; SDA   \   |       |         |
+;     ---`--+------'|         |`--
+;           |       |         |
+;                  Stop
+;                Condition
+;                           Start
+;                         Condition
 ;
-; TODO: Can the clock assumed to be high here?
+; Note
+;  - SCL is assumed to be low
+;  - SCL will be high when returning
+;  - The routing will sleep tCHDL before creating the stop condition, but not
+;    tDHDL after. The i2c_send_start routing will sleep before creating the
+;    start condition.
+;
 i2c_send_stop
 	BANKSEL	i2c_bank
 	SCL_HIGH
+	I2C_SLEEP_tCHDH
+
 	SDA_HIGH
-	; TODO: wait 4.7us to prevent the bus to be used too fast?
 	RETURN
+
+; i2c SCL vs SDA
+;
+;           | tCLCH | tCHCL |
+;     . . -.|       |,-----.|
+; SCL       |       |       |
+;           |`-----'|       |`---
+;           |       |       |
+;     . . --|--. ,--|-------|---- . .
+; SDA       |   X   |       |
+;     . . --|--' `--|-------|---- . .
+;           |       |       |
+;           \ SDA  / \ SDA /
+;            input   change
+;
+; Notes:
+;  - SCL is assumed to be high
 
 ;
 ; Input:
@@ -143,11 +185,14 @@ i2c_send_byte
 	MOVWF	i2c_byte
 	MOVLF	8, i2c_counter
 
-	SCL_LOW				; Pull SCL low to update SDL
-
 _update_sda
+	SCL_LOW				; Pull SCL low to update SDA
+					; From the SCL is pulled low to the SDA data is expected to be
+					; valid there has to be a minimal delay of tCLQV (200ns), but as
+					; the PIC is so slow the if test should be longer than that.
+
 	RLF	i2c_byte, F
-	BTFSC	STATUS,C
+	BTFSS	STATUS,C
 	GOTO	_set_low
 	SDA_HIGH
 	GOTO	_sda_updated
@@ -156,9 +201,10 @@ _set_low
 
 _sda_updated
 	; TODO: sleep while SCL is low after SDA has been updated
+	I2C_SLEEP_tCLCH
 
-	SCL_HIGH			; Release SCL so SDA can be sampled
-	; TODO: sleep while SCL is high
+	SCL_HIGH			; The device will sample SDA here
+	I2C_SLEEP_tCHCL
 
 	DECFSZ	i2c_counter, F
 	GOTO	_update_sda
@@ -167,7 +213,7 @@ _sda_updated
 	SCL_LOW
 	SDA_HIGH			; Effectively release the bus
 
-	; TODO: Sleep some
+	I2C_SLEEP_tCLCH
 
 	; Wait for ACK
 	BTFSC	i2c_port, i2c_sda

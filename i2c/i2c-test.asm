@@ -47,7 +47,6 @@ Start
 
 	; TODO: Set to 16MHz
 
-	DISPLAY_NOISE
 Loop
 ;	BSF	display, display_rd
 ;	CALL	ShowDisplay
@@ -57,23 +56,35 @@ Loop
 
 	BANKSEL	i2c_tris
 
-	BSF	i2c_port, i2c_scl	; SCL_HIGH
-	BCF	i2c_port, i2c_scl	; SCL_LOW
-	BSF	i2c_port, i2c_sda	; SDA_HIGH
-	BCF	i2c_port, i2c_sda	; SDA_LOW
+					; Timing test
+	DISPLAY_NOISE
+	BCF	i2c_port, i2c_scl	; low
+	NOP
+	BSF	i2c_port, i2c_scl	; high
+	NOP
+	NOP
+	BCF	i2c_port, i2c_scl	; low
+	NOP
+	NOP
+	NOP
+	BSF	i2c_port, i2c_scl	; high
+	NOP
+	NOP
+	NOP
+	NOP
+	BCF	i2c_port, i2c_scl	; low
+	DISPLAY_NOISE
 
 	DISPLAY_NOISE
 	CALL	i2c_send_start
-;	DELAY16	0xff, 0xff
 
 	DISPLAY_NOISE
-	MOVLW	B'10101010'
+	MOVLW	B'10100001'		; 1010 + e2 + e1 + a8 + r/w. e2=0, e1=0, a8=0, r/w=1
 	CALL	i2c_send_byte
-;	DELAY16	0x01, 0xff
+	DISPLAY_NOISE
 
 	DISPLAY_NOISE
 	CALL	i2c_send_stop
-;	DELAY16	0x01, 0xff
 
 	GOTO	FailLoop
 

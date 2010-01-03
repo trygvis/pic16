@@ -1,3 +1,8 @@
+2009-12-27: Implemented i2c with bit banging.
+            Got an ACK from the M24C04 EEPROM chip, yay.
+
+2009-12-20->26: Spent lots of time with the saleae-logic-libusb project.
+
 2009-12-19: I hate the PIC's bank selection 'feature'.
 
             Todo items:

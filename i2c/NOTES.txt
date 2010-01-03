@@ -1,0 +1,17 @@
+Test conditions specified in either Table6, Table7 or Table8 and Table13 
+Symbol		Alt. 	Parameter						Min.	Max.	Unit 
+fC		fSCL	Clock frequency						-	100	kHz 
+tCHCL		tHIGH	Clock pulse width high					4	-	μs 
+tCLCH		tLOW	Clock pulse width low					4.7	-	μs 
+tXH1XH2		tR	Input signal rise time					-	1	μs 
+tXL1XL2		tF	Input signal fall time					-	300	ns 
+tDL1DL2(2)	tF	SDA fall time						-	300	ns 
+tDXCX		tSU:DAT	Data in setup time					250	-	ns 
+tCLDX		tHD:DAT	Data in hold time					0	-	ns 
+tCLQX		tDH	Data out hold time					200	-	ns 
+tCLQV(3)	tAA	Clock low to next data valid (access time)		200	3450	ns 
+tCHDX(4)	tSU:STA	Start condition setup time				4.7	-	μs 
+tDLCL		tHD:STA	Start condition hold time				4	-	μs 
+tCHDH		tSU:STO	Stop condition setup time				4	-	μs 
+tDHDL		tBUF	Time between Stop condition and next Start condition	4.7	-	μs 
+tW		tWR	Write time						-	5	ms
